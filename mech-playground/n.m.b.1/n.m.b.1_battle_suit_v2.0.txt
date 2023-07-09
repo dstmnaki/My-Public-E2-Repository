@@ -11,7 +11,7 @@
 @persist Arm_Width Arm_Width_Lower [Offset LHand_HoldPos RHand_HoldPos Holster_Pos Hold_Pos]:vector LeftVal RightVal LeftVal2 RightVal2 RotateTest IsMoving On_Ground
 
 @persist CamPos:vector CamDist CamParent:entity CamActive TP
-@outputs CamPos:vector CamDist CamParent:entity CamActive DampZHeightCheck
+@outputs CamPos:vector CamDist CamParent:entity CamActive DampZHeightCheck RollTest
 if(dupefinished()){reset()}
 if(first()){
     
@@ -44,6 +44,9 @@ if(first()){
         Draw parent:--------------------Check
         
         
+        Keep in mind, the base plate is only used for moving, don't model anything onto it, preferable make it's alpha 0 and model onto the bones instead
+        
+        
         Check for updates here!
         
         https://github.com/dstmnaki/My-Public-E2-Repository/tree/main/mech-playground/n.m.b.1
@@ -56,9 +59,9 @@ if(first()){
     Base:setMass(1000)
     
     TP=0
-    CamPos = TP ? vec(0,-65,55) : vec(0,5,35)
+    CamPos = TP ? vec(0,-65,45) : vec(0,5,35)
     CamDist = TP ? 300 : 0
-    CamParent = TP ? Base : Seat
+    CamParent = TP ? holoEntity(14) : Seat
     
     StandHeight=100
     CrouchHeight=75
@@ -363,16 +366,16 @@ if(clk("int")){
     TPButton=Driver:keyWalk()
     if(changed(TPButton)&TPButton){
         TP=!TP
-        CamPos = TP ? vec(0,-65,55) : vec(0,5,35)
+        CamPos = TP ? vec(0,-65,45) : vec(0,5,35)
         CamDist = TP ? 300 : 0
-        CamParent = TP ? Base : Seat
+        CamParent = TP ? holoEntity(14) : Seat
     }
     
     if((!Jump)&(!JumpStart)&On_Ground){
         if(changed(Space)&Space){
             JumpStart=1
             timer("jump",400)
-            Base:emitSound("npc\dog\dog_servo5.wav",0,85,1)
+            holoEntity(1):emitSound("npc\dog\dog_servo5.wav",0,85,1)
         }
     }
     
@@ -447,8 +450,12 @@ if(clk("int")){
     holoAng(14,holoEntity(1):toWorld(clamp(holoEntity(1):toLocal(ang(CamAng:pitch()*max(LeftVal2,RightVal2),(holoEntity(1):angles():yaw()*(1-max(LeftVal2,RightVal2)))+(CamAng:yaw()*max(LeftVal2,RightVal2)),holoEntity(1):angles():roll())),-ang(25,45,180),ang(25,45,180))+
     ang(clamp(Vel2:x()*0.1*(1-max(LeftVal2,RightVal2)),-15,25)*IsMoving,13*(1-max(LeftVal2,RightVal2))*clamp(RotateTest*1.2,-1,1)+clamp(Vel2:y()*0.1,-15,15),-(1*clamp(RotateTest*2.4,-1,1)))*On_Ground))
     
-    holoPos(1,Base:toWorld(vec(0,0,+((StepBounceHeight*clamp(abs((Time-0.5))*1.5,0,1)*clamp(SpeedDamp:length()*0.65,0,1))))*On_Ground))
-    holoAng(1,Base:toWorld(ang(clamp(Vel2:x()*0.02,-25,65)*IsMoving,-(12*(1-(max(LeftVal2,RightVal2)*0.5))*clamp(RotateTest*1.2,-1,1))+clamp(Vel2:y()*0.1,-15,15)+(5*IsMoving*(Time-0.5)*(Step-!Step)),clamp(-Vel2:y()*0.1,-0.6,0.6))*On_Ground))
+    RollTest=clamp(Base:toLocal((PosLeft+PosRight)/2):y()*0.35,-35,35)*0.5
+    RollTest2=clamp(Base:toLocal((PosLeft+PosRight)/2):y()*0.5,-25,25)
+    PitchTest=clamp(Base:toLocal((PosLeft+PosRight)/2):x()*0.1,-5,5)
+    
+    holoPos(1,Base:toWorld(vec(PitchTest,RollTest2,+((StepBounceHeight*clamp(abs((Time-0.5))*1.5,0,1)*clamp(SpeedDamp:length()*0.65,0,1))))*On_Ground))
+    holoAng(1,Base:toWorld(ang(clamp(Vel2:x()*0.02,-25,65)*IsMoving,-(12*(1-(max(LeftVal2,RightVal2)*0.5))*clamp(RotateTest*1.2,-1,1))+clamp(Vel2:y()*0.1,-15,15)+(5*IsMoving*(Time-0.5)*(Step-!Step)),clamp(-Vel2:y()*0.1,-0.6,0.6)+RollTest)*On_Ground))
     holoAng(2,holoEntity(1):toWorld(ang(0,7*(1-clamp(abs(2*(Base:toLocal(PosLeft):x()/StepDistance)),0,1)),7*clamp(2*((Base:toLocal(PosLeft):y()-LegWidthFloor)/35),-1,1)+10*(1-clamp(abs(1*(Base:toLocal(PosLeft):x()/StepDistance)),0,1)))))
     holoAng(8,holoEntity(1):toWorld(ang(0,-7*(1-clamp(abs(2*(Base:toLocal(PosRight):x()/StepDistance)),0,1)),7*clamp(-2*((Base:toLocal(PosRight):y()+LegWidthFloor)/35),-1,1)-10*(1-clamp(abs(1*(Base:toLocal(PosRight):x()/StepDistance)),0,1)))))
     
@@ -477,7 +484,7 @@ if(clk("int")){
         if(On_Ground){
             PosLeft=Base:toWorld(vec(0,LegWidthFloor,-StandHeight))
             PosRight=Base:toWorld(vec(0,-LegWidthFloor,-StandHeight))
-            Base:emitSound("npc/dog/dog_footstep_run3.wav",0,100,1)
+            holoEntity(1):emitSound("npc/dog/dog_footstep_run3.wav",0,100,1)
             Base:propSetVelocity((Base:vel()*vec(1,1,0)))
         }else{
             timer("unjump",100)
@@ -507,15 +514,15 @@ if(clk("int")){
     }
     LHand_Pos=mix(LPos2,LPos1,LeftVal2)
     RHand_Pos=mix(RPos2,RPos1,RightVal2)
-    quat_ik(15,16,17,Length_A,Length_B,(M1 ? holoEntity(14) : Base),LHand_Pos,LHand_Ang,ang(0,-25,0),LeftVal2>0)
+    quat_ik(15,16,17,Length_A,Length_B,(M1 ? holoEntity(14) : Base),LHand_Pos-(Base:right()*RollTest2*(1-LeftVal2)),LHand_Ang,ang(0,-25,0),LeftVal2>0)
     
-    quat_ik(18,19,20,Length_A,Length_B,(M2 ? holoEntity(14) : Base),RHand_Pos,RHand_Ang,ang(0,25,0),RightVal2>0)
+    quat_ik(18,19,20,Length_A,Length_B,(M2 ? holoEntity(14) : Base),RHand_Pos-(Base:right()*RollTest2*(1-RightVal2)),RHand_Ang,ang(0,25,0),RightVal2>0)
 }
 if(clk("unjump")){
     Jump=JumpStart=0
 }
 if(clk("jump")){
     Jump=1
-    Base:propSetVelocity((Base:vel()*vec(1,1,Vel:z()>0 ? 1 : 0))+Base:up()*700)
-    Base:emitSound("npc/dog/dog_pneumatic1.wav",0,100,1)
+    Base:propSetVelocity((Base:vel()*vec(1,1,Vel:z()>0 ? 1 : 0))+Base:up()*800)
+    holoEntity(1):emitSound("npc/dog/dog_pneumatic1.wav",0,100,1)
 }
