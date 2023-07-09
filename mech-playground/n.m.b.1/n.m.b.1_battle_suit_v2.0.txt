@@ -375,7 +375,7 @@ if(clk("int")){
         if(changed(Space)&Space){
             JumpStart=1
             timer("jump",400)
-            holoEntity(1):emitSound("npc\dog\dog_servo5.wav",0,85,1)
+            holoEntity(1):emitSound("npc\dog\dog_servo5.wav",80,85,1)
         }
     }
     
@@ -434,11 +434,11 @@ if(clk("int")){
         Step=!Step
         if((IsMoving2>0.015)&On_Ground){
             if(Step){
-                holoEntity(13):emitSound("npc/dog/dog_footstep2.wav",0,clamp(100*(NextLeft:distance(LastLeft)/StepDistance/1.5),75,100),clamp(100*(NextLeft:distance(LastLeft)/StepDistance/1.5),85,100)/100)
-                holoEntity(7):emitSound("npc\dog\dog_servo5.wav",0,clamp(100*(NextRight:distance(LastRight)/StepDistance/5),75,100),clamp(100*(NextLeft:distance(LastRight)/StepDistance/5),65,100)/100)
+                holoEntity(13):emitSound("npc/dog/dog_footstep2.wav",80,clamp(100*(NextLeft:distance(LastLeft)/StepDistance/1.5),75,100),clamp(100*(NextLeft:distance(LastLeft)/StepDistance/1.5),85,100)/100)
+                holoEntity(7):emitSound("npc\dog\dog_servo5.wav",80,clamp(100*(NextRight:distance(LastRight)/StepDistance/5),75,100),clamp(100*(NextLeft:distance(LastRight)/StepDistance/5),65,100)/100)
             }else{
-                holoEntity(7):emitSound("npc/dog/dog_footstep2.wav",0,clamp(100*(NextRight:distance(LastRight)/StepDistance/1.5),75,100),clamp(100*(NextRight:distance(LastRight)/StepDistance/1.5),85,100)/100)
-                holoEntity(13):emitSound("npc\dog\dog_servo5.wav",0,clamp(100*(NextRight:distance(LastLeft)/StepDistance/5),75,100),clamp(100*(NextLeft:distance(LastLeft)/StepDistance/5),65,100)/100)
+                holoEntity(7):emitSound("npc/dog/dog_footstep2.wav",80,clamp(100*(NextRight:distance(LastRight)/StepDistance/1.5),75,100),clamp(100*(NextRight:distance(LastRight)/StepDistance/1.5),85,100)/100)
+                holoEntity(13):emitSound("npc\dog\dog_servo5.wav",80,clamp(100*(NextRight:distance(LastLeft)/StepDistance/5),75,100),clamp(100*(NextLeft:distance(LastLeft)/StepDistance/5),65,100)/100)
             }
         }
     }
@@ -484,7 +484,7 @@ if(clk("int")){
         if(On_Ground){
             PosLeft=Base:toWorld(vec(0,LegWidthFloor,-StandHeight))
             PosRight=Base:toWorld(vec(0,-LegWidthFloor,-StandHeight))
-            holoEntity(1):emitSound("npc/dog/dog_footstep_run3.wav",0,100,1)
+            holoEntity(1):emitSound("npc/dog/dog_footstep_run3.wav",80,100,1)
             Base:propSetVelocity((Base:vel()*vec(1,1,0)))
         }else{
             timer("unjump",100)
@@ -524,5 +524,5 @@ if(clk("unjump")){
 if(clk("jump")){
     Jump=1
     Base:propSetVelocity((Base:vel()*vec(1,1,Vel:z()>0 ? 1 : 0))+Base:up()*800)
-    holoEntity(1):emitSound("npc/dog/dog_pneumatic1.wav",0,100,1)
+    holoEntity(1):emitSound("npc/dog/dog_pneumatic1.wav",80,100,1)
 }
