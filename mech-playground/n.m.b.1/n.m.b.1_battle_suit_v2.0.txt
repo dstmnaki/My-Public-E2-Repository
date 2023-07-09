@@ -289,7 +289,7 @@ if(first()){
     function number icos(A, B, C) {
         return acos((A^2 + B^2 - C^2) / (2*A*B))    
     }
-    function digi_ik(NHipA, NHipB, NKnee, NAnkle, NFoot, LengthA, LengthB, LengthC, Base:entity, Target:vector, LegRotation) {
+    function digi_ik(NHipA, NHipB, NKnee, NAnkle, NFoot, LengthA, LengthB, LengthC, Base:entity, Target:vector, LegRotation, S) {
         local AxisWorld = Target - holoEntity(NHipA):pos()
         local AxisLocal = Base:toLocalAxis(AxisWorld)
         
@@ -305,7 +305,7 @@ if(first()){
         
         holoAng(NKnee, holoEntity(NHipA):toWorld(ang(atan(AxisLocal:x(), AxisLocal:z()) + icos(Distance, LengthB, LengthC), 0, 0)))
         holoAng(NAnkle, holoEntity(NKnee):toWorld(ang(icos(LengthC, LengthB, Distance) + 180, 0, 0)))
-        holoAng(NFoot, Base:angles())
+        holoAng(NFoot, S ? Base:angles() : holoEntity(NAnkle):toWorld(ang(180,0,0)))
     }
     function quat_ik(NHip, NKnee, NFoot, LengthA, LengthB, Base:entity, Target:vector, HandAng:angle, ShoulderAng:angle, Aim) {
         local Origin = holoEntity(NHip):pos()
@@ -459,18 +459,18 @@ if(clk("int")){
         if(Step){
             LastRight=PosRight
             PosLeft=bezier(LastLeft,mix(LastLeft,NextLeft,0.65)+Base:up()*StepHeight*IsMoving,NextLeft,Time)
-            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5)
-            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5)
+            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
+            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
         }else{
             LastLeft=PosLeft
             PosRight=bezier(LastRight,mix(LastRight,NextRight,0.65)+Base:up()*StepHeight*IsMoving,NextRight,Time)
-            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5)
-            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5)
+            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
+            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
         }
     }else{
-        digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,LegWidthFloor,-mix(StandHeight,CrouchHeight,1)))-AddVel,5)
+        digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,LegWidthFloor,-mix(StandHeight,CrouchHeight,1)))-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
         
-        digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,-LegWidthFloor,-mix(StandHeight,CrouchHeight,0)))-AddVel,-5)
+        digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,-LegWidthFloor,-mix(StandHeight,CrouchHeight,0)))-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
     }
     if(changed(On_Ground)){
         Base:propGravity(!On_Ground)
