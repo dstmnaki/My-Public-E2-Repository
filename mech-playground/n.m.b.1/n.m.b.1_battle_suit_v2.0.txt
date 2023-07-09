@@ -1,4 +1,4 @@
-@name Mech-Playground/N.M.B.1/N.M.B.1 Battle Suit V1.0
+@name Mech-Playground/N.M.B.1/N.M.B.1 Battle Suit V2.0
 @inputs [Base Seat]:entity CamAng:angle
 @inputs [Pelvis Torso]:entity
 @inputs [Left_Leg_Connector Left_Thigh Left_Knee Left_Calf Left_Foot]:entity
@@ -8,16 +8,16 @@
 
 @persist [PosLeft PosRight]:vector CycleTime CycleTime2 Step Time Time2 Jump JumpStart
 @persist [NextLeft NextRight LastLeft LastRight]:vector
-@persist Arm_Width Arm_Width_Lower [Offset LHand_HoldPos RHand_HoldPos Holster_Pos Hold_Pos]:vector LeftVal RightVal LeftVal2 RightVal2 RotateTest IsMoving
+@persist Arm_Width Arm_Width_Lower [Offset LHand_HoldPos RHand_HoldPos Holster_Pos Hold_Pos]:vector LeftVal RightVal LeftVal2 RightVal2 RotateTest IsMoving On_Ground
 
 @persist CamPos:vector CamDist CamParent:entity CamActive TP
-@outputs CamPos:vector CamDist CamParent:entity CamActive Force:vector
+@outputs CamPos:vector CamDist CamParent:entity CamActive DampZHeightCheck
 if(dupefinished()){reset()}
 if(first()){
     
     
     #[
-        N.M.B.1 Battle Suit V1.0 by [DSTM]Naki
+        N.M.B.1 Battle Suit V2.0 by [DSTM]Naki
         
         Titanfall like mech base, using holoparenting tech for maxium performance
         
@@ -50,14 +50,14 @@ if(first()){
         
     ]#
     
-    setName("N.M.B.1 Battle Suit V1.0")
+    setName("N.M.B.1 Battle Suit V2.0")
     
     Base:propDrag(0)
     Base:setMass(1000)
     
     TP=0
-    CamPos = TP ? vec(0,0,45) : vec(0,0,35)
-    CamDist = TP ? 250 : 0
+    CamPos = TP ? vec(0,-65,55) : vec(0,5,35)
+    CamDist = TP ? 300 : 0
     CamParent = TP ? Base : Seat
     
     StandHeight=100
@@ -338,12 +338,14 @@ if(clk("int")){
     IsMoving=clamp(Base:vel():length()*0.003,0,1)
     SpeedDamp=Base:velL()*0.005
     
-    MoveVel=(Vel2:setZ(0):normalized()*clamp(Vel2:length()/100,0,1))*StepDistance*(Base:vel():length()/200)
+    MoveVel=(Vel2:setZ(0):normalized()*clamp(Vel2:length()/100,0,1))*StepDistance*(Base:vel():length()/200)*On_Ground
     Ranger_Left=rangerOffsetHull(StandHeight*2,Base:toWorld(vec(0,LegWidthFloor,0)+(MoveVel*vec(1,0.8*clamp(abs(Base:velL():y())*0.5,0,1),1))),-Base:up(),vec(12))
     Ranger_Right=rangerOffsetHull(StandHeight*2,Base:toWorld(vec(0,-LegWidthFloor,0)+(MoveVel*vec(1,0.8*clamp(abs(Base:velL():y())*0.5,0,1),1))),-Base:up(),vec(12))
-    Dist=(Ranger_Left:distance()+Ranger_Right:distance())/2
+    Ranger=rangerOffsetHull(StandHeight*2,Base:toWorld(vec(0,0,0)),-Base:up(),vec(12))
+    Dist2=(Ranger_Left:distance()+Ranger_Right:distance()+Ranger:distance())/3
+    Dist=max(Ranger:distance(),Dist2)
     
-    On_Ground=Dist<(StandHeight+25)
+    On_Ground=Dist<(StandHeight+50)
     
     Driver=Seat:driver()
     if(changed(Driver:isPlayer())){
@@ -361,7 +363,7 @@ if(clk("int")){
     TPButton=Driver:keyWalk()
     if(changed(TPButton)&TPButton){
         TP=!TP
-        CamPos = TP ? vec(0,-65,55) : vec(5,0,35)
+        CamPos = TP ? vec(0,-65,55) : vec(0,5,35)
         CamDist = TP ? 300 : 0
         CamParent = TP ? Base : Seat
     }
@@ -382,15 +384,16 @@ if(clk("int")){
     
     XDir=((Base:forward()*X)+(Base:right()*Y)):normalized()
     
-    HeightCheck = clamp(Control+JumpStart,0,1) ? CrouchHeight : StandHeight
+    HeightCheck = (clamp(Control+JumpStart,0,1) ? CrouchHeight : StandHeight)
     
-    Height=((HeightCheck-Dist)*85)
+    Height=((HeightCheck-Dist)*100)
     
     Dir=XDir+(Base:right()*(-0.2*IsMoving*(Time-0.5)*(Step-!Step)))
     
     DampX=(Base:forward()*Vel2:x()*0.8*!Jump)*(1+(IsMoving*(1.5+abs(SpeedDamp:x()*0.6))))
     DampY=-(Base:right()*Vel2:y()*1*!Jump)*(1+(IsMoving*(1.5+abs(SpeedDamp:y()*0.6))))
-    DampZ=(Base:up()*Vel2:z()*(Vel2:z()<0 ? (JumpStart|Control ? 4 : 8) : 3*!JumpStart)*!Jump)*clamp(abs(Height/15),0,1)
+    DampZHeightCheck=clamp(1+abs(Height*0.01),1,2)
+    DampZ=(Base:up()*Vel2:z()*(Vel2:z()<0 ? (JumpStart|Control ? 4 : 12/DampZHeightCheck) : (7/DampZHeightCheck)*!JumpStart)*!Jump)*clamp(abs(Height/15),0,1)
     
     XCheck=(Vel2:x()<0)-(Vel2:x()>0)
     LeftHold=(Base:toLocal(PosLeft):x()*XCheck/StepDistance)
@@ -475,6 +478,7 @@ if(clk("int")){
             PosLeft=Base:toWorld(vec(0,LegWidthFloor,-StandHeight))
             PosRight=Base:toWorld(vec(0,-LegWidthFloor,-StandHeight))
             Base:emitSound("npc/dog/dog_footstep_run3.wav",0,100,1)
+            Base:propSetVelocity((Base:vel()*vec(1,1,0)))
         }else{
             timer("unjump",100)
         }
