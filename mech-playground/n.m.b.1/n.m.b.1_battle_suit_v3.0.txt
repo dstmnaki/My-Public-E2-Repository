@@ -1,4 +1,4 @@
-@name Mech-Playground/N.M.B.1/N.M.B.1 Battle Suit V2.0
+@name Mech-Playground/N.M.B.1/N.M.B.1 Battle Suit V3.0
 @inputs [Base Seat]:entity CamAng:angle
 @inputs [Pelvis Torso]:entity
 @inputs [Left_Leg_Connector Left_Thigh Left_Knee Left_Calf Left_Foot]:entity
@@ -9,15 +9,18 @@
 @persist [PosLeft PosRight]:vector CycleTime CycleTime2 Step Time Time2 Jump JumpStart
 @persist [NextLeft NextRight LastLeft LastRight]:vector
 @persist Arm_Width Arm_Width_Lower [Offset LHand_HoldPos RHand_HoldPos Holster_Pos Hold_Pos]:vector LeftVal RightVal LeftVal2 RightVal2 RotateTest IsMoving On_Ground
-
+@persist Gun_Left Gun_Right
 @persist CamPos:vector CamDist CamParent:entity CamActive TP
-@outputs CamPos:vector CamDist CamParent:entity CamActive DampZHeightCheck RollTest
+@outputs CamPos:vector CamDist CamParent:entity CamActive
+
+@persist EditMode
 if(dupefinished()){reset()}
 if(first()){
-    
+    EditMode=0
+    rangerHitEntities(!EditMode)
     
     #[
-        N.M.B.1 Battle Suit V2.0 by [DSTM]Naki
+        N.M.B.1 Battle Suit V3.0 by [DSTM]Naki
         
         Titanfall like mech base, using holoparenting tech for maxium performance
         
@@ -53,7 +56,7 @@ if(first()){
         
     ]#
     
-    setName("N.M.B.1 Battle Suit V2.0")
+    setName("N.M.B.1 Battle Suit V3.0")
     
     Base:propDrag(0)
     Base:setMass(1000)
@@ -87,6 +90,7 @@ if(first()){
     Length_B=60
     LHand_HoldPos=vec(75,-25,-10)
     RHand_HoldPos=vec(25,-35,-15)
+    
     
     local I = 1
     local E = Base
@@ -290,13 +294,13 @@ if(first()){
     }
     
     function number icos(A, B, C) {
-        return acos((A^2 + B^2 - C^2) / (2*A*B))    
+        return acos((A^2 + B^2 - C^2) / (2*A*B))
     }
     function digi_ik(NHipA, NHipB, NKnee, NAnkle, NFoot, LengthA, LengthB, LengthC, Base:entity, Target:vector, LegRotation, S) {
         local AxisWorld = Target - holoEntity(NHipA):pos()
         local AxisLocal = Base:toLocalAxis(AxisWorld)
         
-        holoAng(NHipA, Base:toWorld(ang(0, LegRotation, atan(AxisLocal:z(), AxisLocal:y()) + 90)))
+        holoAng(NHipA, Base:toWorld(ang(0, LegRotation*!EditMode, atan(AxisLocal:z(), AxisLocal:y()) + 90)))
         
         local AxisLocal = holoEntity(NHipA):toLocalAxis(AxisWorld)
         local Fraction = 1 - min(1, holoEntity(NHipB):pos():distance(Target) / (LengthA + LengthC) - 0.5)
@@ -308,7 +312,7 @@ if(first()){
         
         holoAng(NKnee, holoEntity(NHipA):toWorld(ang(atan(AxisLocal:x(), AxisLocal:z()) + icos(Distance, LengthB, LengthC), 0, 0)))
         holoAng(NAnkle, holoEntity(NKnee):toWorld(ang(icos(LengthC, LengthB, Distance) + 180, 0, 0)))
-        holoAng(NFoot, S ? Base:angles() : holoEntity(NAnkle):toWorld(ang(180,0,0)))
+        holoAng(NFoot, (S|EditMode)*(On_Ground) ? Base:angles() : holoEntity(NAnkle):toWorld(ang(180,0,0)))
     }
     function quat_ik(NHip, NKnee, NFoot, LengthA, LengthB, Base:entity, Target:vector, HandAng:angle, ShoulderAng:angle, Aim) {
         local Origin = holoEntity(NHip):pos()
@@ -327,6 +331,8 @@ if(first()){
     function number mix(N1:number,N2:number,M:number){
         return mix(vec(N1),vec(N2),M):x()
     }
+    Arm_Width_Lower=mix(Arm_Width,Arm_Width_Lower,EditMode)
+    LegWidthFloor=mix(LegWidth,LegWidthFloor,EditMode)
     
     NextLeft=LastLeft=PosLeft=Base:toWorld(vec(0,LegWidthFloor,-StandHeight))
     NextRight=LastRight=PosRight=Base:toWorld(vec(0,-LegWidthFloor,-StandHeight))
@@ -348,7 +354,7 @@ if(clk("int")){
     Dist2=(Ranger_Left:distance()+Ranger_Right:distance()+Ranger:distance())/3
     Dist=max(Ranger:distance(),Dist2)
     
-    On_Ground=Dist<(StandHeight+50)
+    On_Ground=(Dist<(StandHeight+50))|EditMode
     
     Driver=Seat:driver()
     if(changed(Driver:isPlayer())){
@@ -361,9 +367,21 @@ if(clk("int")){
     Shift=Driver:keySprint()
     Space=Driver:keyJump()
     Control=Driver:keyDuck()
-    M1=Driver:keyAttack1()
-    M2=Driver:keyAttack2()
+    Mouse1=Driver:keyAttack1()
+    Mouse2=Driver:keyAttack2()
     TPButton=Driver:keyWalk()
+    
+    Gun_Left_Toggle=Driver:keyPressed("1")
+    Gun_Right_Toggle=Driver:keyPressed("2")
+    if(changed(Gun_Left_Toggle)&Gun_Left_Toggle){
+        Gun_Left=!Gun_Left
+    }
+    if(changed(Gun_Right_Toggle)&Gun_Right_Toggle){
+        Gun_Right=!Gun_Right
+    }
+    M1=Mouse1|Gun_Left
+    M2=Mouse2|Gun_Right
+    
     if(changed(TPButton)&TPButton){
         TP=!TP
         CamPos = TP ? vec(0,-65,45) : vec(0,5,35)
@@ -458,26 +476,31 @@ if(clk("int")){
     holoAng(1,Base:toWorld(ang(clamp(Vel2:x()*0.02,-25,65)*IsMoving,-(12*(1-(max(LeftVal2,RightVal2)*0.5))*clamp(RotateTest*1.2,-1,1))+clamp(Vel2:y()*0.1,-15,15)+(5*IsMoving*(Time-0.5)*(Step-!Step)),clamp(-Vel2:y()*0.1,-0.6,0.6)+RollTest)*On_Ground))
     holoAng(2,holoEntity(1):toWorld(ang(0,7*(1-clamp(abs(2*(Base:toLocal(PosLeft):x()/StepDistance)),0,1)),7*clamp(2*((Base:toLocal(PosLeft):y()-LegWidthFloor)/35),-1,1)+10*(1-clamp(abs(1*(Base:toLocal(PosLeft):x()/StepDistance)),0,1)))))
     holoAng(8,holoEntity(1):toWorld(ang(0,-7*(1-clamp(abs(2*(Base:toLocal(PosRight):x()/StepDistance)),0,1)),7*clamp(-2*((Base:toLocal(PosRight):y()+LegWidthFloor)/35),-1,1)-10*(1-clamp(abs(1*(Base:toLocal(PosRight):x()/StepDistance)),0,1)))))
-    
-    if(On_Ground){
-        Base:applyForce(Force+MidPos*Base:mass())
-        NextLeft=Ranger_Left:pos()
-        NextRight=Ranger_Right:pos()
-        if(Step){
-            LastRight=PosRight
-            PosLeft=bezier(LastLeft,mix(LastLeft,NextLeft,0.65)+Base:up()*StepHeight*IsMoving,NextLeft,Time)
-            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
-            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
+    if(!EditMode){
+        if(On_Ground){
+            Base:applyForce(Force+MidPos*Base:mass())
+            NextLeft=Ranger_Left:pos()
+            NextRight=Ranger_Right:pos()
+            if(Step){
+                LastRight=PosRight
+                PosLeft=bezier(LastLeft,mix(LastLeft,NextLeft,0.65)+Base:up()*StepHeight*IsMoving,NextLeft,Time)
+                digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
+                digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
+            }else{
+                LastLeft=PosLeft
+                PosRight=bezier(LastRight,mix(LastRight,NextRight,0.65)+Base:up()*StepHeight*IsMoving,NextRight,Time)
+                digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
+                digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
+            }
         }else{
-            LastLeft=PosLeft
-            PosRight=bezier(LastRight,mix(LastRight,NextRight,0.65)+Base:up()*StepHeight*IsMoving,NextRight,Time)
-            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
-            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
+            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,LegWidthFloor,-mix(StandHeight,CrouchHeight,1)))-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
+            
+            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,-LegWidthFloor,-mix(StandHeight,CrouchHeight,0)))-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
         }
     }else{
-        digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,LegWidthFloor,-mix(StandHeight,CrouchHeight,1)))-AddVel,5*clamp(1-Vel:length()*0.1,0,1),!Step)
+        digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,LegWidthFloor,-StandHeight)),0,0)
         
-        digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,-LegWidthFloor,-mix(StandHeight,CrouchHeight,0)))-AddVel,-5*clamp(1-Vel:length()*0.1,0,1),Step)
+        digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,-LegWidthFloor,-StandHeight)),0,0)
     }
     if(changed(On_Ground)){
         Base:propGravity(!On_Ground)
@@ -491,32 +514,32 @@ if(clk("int")){
         }
     }
     RotateTest=((((Time2-0.5)*(Step-!Step))*2))*IsMoving*On_Ground
-    LHand_Ang=mix(CamAng:setRoll(25)*CamActive,holoEntity(16):angles(),LeftVal2)
-    RHand_Ang=mix(CamAng:setRoll(-25)*CamActive,holoEntity(19):angles(),RightVal2)
+    LHand_Ang=mix(CamAng:setRoll(25)*CamActive,holoEntity(16):toWorld(ang(-90,0,0)),LeftVal2)
+    RHand_Ang=mix(CamAng:setRoll(-25)*CamActive,holoEntity(19):toWorld(ang(-90,0,0)),RightVal2)
     LeftVal+=0.25*(M1-!M1)
     RightVal+=0.25*(M2-!M2)
     LeftVal=clamp(LeftVal,0,1)
     RightVal=clamp(RightVal,0,1)
     LeftVal2=LeftVal * LeftVal * (3.0 - 2.0 * LeftVal)
     RightVal2=RightVal * RightVal * (3.0 - 2.0 * RightVal)
-    LeftHandRanger=rangerOffsetHull((Length_A+Length_B)*0.9,holoEntity(15):pos()-holoEntity(14):up()*7,CamAng:forward(),vec(12))
-    RightHandRanger=rangerOffsetHull((Length_A+Length_B)*0.9,holoEntity(18):pos()-holoEntity(14):up()*7,CamAng:forward(),vec(12))
+    LeftHandRanger=rangerOffsetHull((Length_A+Length_B)*(Gun_Left ? mix(0.75,0.9,0) : 1.1),holoEntity(15):pos()-holoEntity(14):up()*7,CamAng:forward(),vec(12))
+    RightHandRanger=rangerOffsetHull((Length_A+Length_B)*(Gun_Right ? mix(0.75,0.9,0) : 1.1),holoEntity(18):pos()-holoEntity(14):up()*7,CamAng:forward(),vec(12))
     if(On_Ground){
         LPos1=(M1 ? holoEntity(14) : Base):toWorld(vec(15,Arm_Width_Lower,-Offset:z()-5-(35*LeftVal2)):rotateAroundAxis(vec(0,1,0),(45*RotateTest*!M1)))
         LPos2=LeftHandRanger:pos()
         RPos1=(M2 ? holoEntity(14) : Base):toWorld(vec(15,-Arm_Width_Lower,-Offset:z()-5-(35*RightVal2)):rotateAroundAxis(vec(0,-1,0),(45*RotateTest*!M2)))
         RPos2=RightHandRanger:pos()
     }else{
-        LPos1=holoEntity(14):toWorld(vec(15,Arm_Width_Lower*1.5,-Offset:z()+15-(Vel2:z()*0.025)))
+        LPos1=holoEntity(14):toWorld(vec(15,Arm_Width_Lower*(EditMode ? 1 : 1.5),-Offset:z()+15-(Vel2:z()*0.025)))
         LPos2=LeftHandRanger:pos()
-        RPos1=holoEntity(14):toWorld(vec(15,-Arm_Width_Lower*1.5,-Offset:z()+15-(Vel2:z()*0.025)))
+        RPos1=holoEntity(14):toWorld(vec(15,-Arm_Width_Lower*(EditMode ? 1 : 1.5),-Offset:z()+15-(Vel2:z()*0.025)))
         RPos2=RightHandRanger:pos()
     }
     LHand_Pos=mix(LPos2,LPos1,LeftVal2)
     RHand_Pos=mix(RPos2,RPos1,RightVal2)
-    quat_ik(15,16,17,Length_A,Length_B,(M1 ? holoEntity(14) : Base),LHand_Pos-(Base:right()*RollTest2*(1-LeftVal2)),LHand_Ang,ang(0,-25,0),LeftVal2>0)
+    quat_ik(15,16,17,Length_A,Length_B,(M1 ? holoEntity(14) : Base),LHand_Pos-((Base:right()*RollTest2*(1-LeftVal2))*!EditMode),LHand_Ang,ang(0,-25*!EditMode,0),LeftVal2>0)
     
-    quat_ik(18,19,20,Length_A,Length_B,(M2 ? holoEntity(14) : Base),RHand_Pos-(Base:right()*RollTest2*(1-RightVal2)),RHand_Ang,ang(0,25,0),RightVal2>0)
+    quat_ik(18,19,20,Length_A,Length_B,(M2 ? holoEntity(14) : Base),RHand_Pos-((Base:right()*RollTest2*(1-RightVal2))*!EditMode),RHand_Ang,ang(0,25*!EditMode,0),RightVal2>0)
 }
 if(clk("unjump")){
     Jump=JumpStart=0
@@ -525,4 +548,10 @@ if(clk("jump")){
     Jump=1
     Base:propSetVelocity((Base:vel()*vec(1,1,Vel:z()>0 ? 1 : 0))+Base:up()*800)
     holoEntity(1):emitSound("npc/dog/dog_pneumatic1.wav",80,100,1)
+    timer("ground_check",200)
+}
+if(clk("ground_check")){
+    if(On_Ground){
+        timer("unjump",100)
+    }
 }
