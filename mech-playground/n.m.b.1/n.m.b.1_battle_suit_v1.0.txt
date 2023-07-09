@@ -42,6 +42,12 @@ if(first()){
         Auto un-clip ignores water:-----optional
         Draw player:--------------------Uncheck
         Draw parent:--------------------Check
+        
+        
+        Check for updates here!
+        
+        https://github.com/dstmnaki/My-Public-E2-Repository/tree/main/mech-playground/n.m.b.1
+        
     ]#
     
     setName("N.M.B.1 Battle Suit V1.0")
