@@ -1,0 +1,511 @@
+@name Mech-Playground/N.M.B.1/N.M.B.1 Battle Suit V1.0
+@inputs [Base Seat]:entity CamAng:angle
+@inputs [Pelvis Torso]:entity
+@inputs [Left_Leg_Connector Left_Thigh Left_Knee Left_Calf Left_Foot]:entity
+@inputs [Right_Leg_Connector Right_Thigh Right_Knee Right_Calf Right_Foot]:entity [LShoulder RShoulder LArm RArm LHand RHand]:entity
+
+@persist [StandHeight CrouchHeight] [LegWidth2 LegWidth LegWidthFloor] [LengthA LengthB LengthC Length_A Length_B] MoveSpeed StepHeight StepSpeed StepDistance StepBounceHeight
+
+@persist [PosLeft PosRight]:vector CycleTime CycleTime2 Step Time Time2 Jump JumpStart
+@persist [NextLeft NextRight LastLeft LastRight]:vector
+@persist Arm_Width Arm_Width_Lower [Offset LHand_HoldPos RHand_HoldPos Holster_Pos Hold_Pos]:vector LeftVal RightVal LeftVal2 RightVal2 RotateTest IsMoving
+
+@persist CamPos:vector CamDist CamParent:entity CamActive TP
+@outputs CamPos:vector CamDist CamParent:entity CamActive Force:vector
+if(dupefinished()){reset()}
+if(first()){
+    
+    
+    #[
+        N.M.B.1 Battle Suit V1.0 by [DSTM]Naki
+        
+        Titanfall like mech base, using holoparenting tech for maxium performance
+        
+        WASD - Movement
+        Shift - Run
+        Control - Crouch
+        Space - Jump
+        
+        Alt - Thirdperson
+        Mouse1 - Point Left Arm
+        Mouse2 - Point Right Arm
+        
+        
+        Cam Controller Settings:
+        
+        Coordinates local to parent:----Check
+        Client side movement:-----------Check
+        Free Movement:------------------Uncheck
+        Localized movement:-------------Uncheck
+        Client side zooming:------------optional
+        Auto un-clip:-------------------optional
+        Auto un-clip ignores water:-----optional
+        Draw player:--------------------Uncheck
+        Draw parent:--------------------Check
+    ]#
+    
+    setName("N.M.B.1 Battle Suit V1.0")
+    
+    Base:propDrag(0)
+    Base:setMass(1000)
+    
+    TP=0
+    CamPos = TP ? vec(0,0,45) : vec(0,0,35)
+    CamDist = TP ? 250 : 0
+    CamParent = TP ? Base : Seat
+    
+    StandHeight=100
+    CrouchHeight=75
+    
+    StepHeight=45
+    StepSpeed=2.6
+    StepDistance=75
+    StepBounceHeight=5
+    LegWidth2=10
+    LegWidth=24
+    LegWidthFloor=35
+    
+    LengthA=60*0.75
+    LengthB=40*0.75
+    LengthC=65*0.75
+    
+    MoveSpeed=200
+    
+    Offset=vec(-5,0,35)
+    Arm_Width=35
+    Arm_Width_Lower=48
+    Length_A=60
+    Length_B=60
+    LHand_HoldPos=vec(75,-25,-10)
+    RHand_HoldPos=vec(25,-35,-15)
+    
+    local I = 1
+    local E = Base
+    local T = Pelvis
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,0)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 2
+    local E = holoEntity(1)
+    local T = Left_Leg_Connector
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,LegWidth2,0)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 3
+    local E = holoEntity(2)
+    holoCreate(I)
+    holoPos(I,E:toWorld(vec(0,LegWidth-LegWidth2,0)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    holoAlpha(I,0)
+    
+    local I = 4
+    local E = holoEntity(3)
+    local T = Left_Thigh
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,0)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 5
+    local E = holoEntity(4)
+    local T = Left_Knee
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,LengthA)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 6
+    local E = holoEntity(5)
+    local T = Left_Calf
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,LengthB)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 7
+    local E = holoEntity(6)
+    local T = Left_Foot
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,LengthC)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    
+    local I = 8
+    local E = holoEntity(1)
+    local T = Right_Leg_Connector
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,-LegWidth2,0)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 9
+    local E = holoEntity(8)
+    holoCreate(I)
+    holoPos(I,E:toWorld(vec(0,-LegWidth+LegWidth2,0)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    holoAlpha(I,0)
+    
+    local I = 10
+    local E = holoEntity(9)
+    local T = Right_Thigh
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,0)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 11
+    local E = holoEntity(10)
+    local T = Right_Knee
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,LengthA)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 12
+    local E = holoEntity(11)
+    local T = Right_Calf
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,LengthB)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 13
+    local E = holoEntity(12)
+    local T = Right_Foot
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,LengthC)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    
+    local I = 14
+    local E = holoEntity(1)
+    local T = Torso
+    holoCreate(I)
+    holoPos(I,T:toWorld(vec(0,0,0)))
+    holoAng(I,T:toWorld(ang(0,0,0)))
+    T:parentTo(holoEntity(I))
+    holoPos(I,E:toWorld(vec(0,0,25)))
+    holoAng(I,E:toWorld(ang(0,0,0)))
+    holoParent(I,E)
+    rangerPersist(1)
+    
+    #l shoulder
+    holoCreate(15,LShoulder:toWorld(vec(0,0,0)),vec(0),LShoulder:toWorld(ang(0,0,0)),vec(255),"cube")
+    LShoulder:parentTo(holoEntity(15))
+    holoPos(15,holoEntity(14):toWorld(vec(0,Arm_Width,0)+Offset))
+    holoAng(15,holoEntity(14):toWorld(ang(0,0,0)))
+    holoParent(15,14)
+    #l arm
+    holoCreate(16,LArm:toWorld(vec(0,0,0)),vec(0),LArm:toWorld(ang(0,0,0)),vec(255),"cube")
+    LArm:parentTo(holoEntity(16))
+    holoPos(16,holoEntity(15):toWorld(vec(0,0,Length_A)))
+    holoAng(16,holoEntity(15):toWorld(ang(0,0,0)))
+    holoParent(16,15)
+    #l hand
+    holoCreate(17,LHand:toWorld(vec(0,0,0)),vec(0),LHand:toWorld(ang(0,0,0)),vec(255),"cube")
+    LHand:parentTo(holoEntity(17))
+    holoPos(17,holoEntity(16):toWorld(vec(0,0,Length_B)))
+    holoAng(17,holoEntity(16):toWorld(ang(0,0,0)))
+    holoParent(17,16)
+    #r shoulder
+    holoCreate(18,RShoulder:toWorld(vec(0,0,0)),vec(0),RShoulder:toWorld(ang(0,0,0)),vec(255),"cube")
+    RShoulder:parentTo(holoEntity(18))
+    holoPos(18,holoEntity(14):toWorld(vec(0,-Arm_Width,0)+Offset))
+    holoAng(18,holoEntity(14):toWorld(ang(0,0,0)))
+    holoParent(18,14)
+    #r arm
+    holoCreate(19,RArm:toWorld(vec(0,0,0)),vec(0),RArm:toWorld(ang(0,0,0)),vec(255),"cube")
+    RArm:parentTo(holoEntity(19))
+    holoPos(19,holoEntity(18):toWorld(vec(0,0,Length_A)))
+    holoAng(19,holoEntity(18):toWorld(ang(0,0,0)))
+    holoParent(19,18)
+    #r hand
+    holoCreate(20,RHand:toWorld(vec(0,0,0)),vec(0),RHand:toWorld(ang(0,0,0)),vec(255),"cube")
+    RHand:parentTo(holoEntity(20))
+    holoPos(20,holoEntity(19):toWorld(vec(0,0,Length_B)))
+    holoAng(20,holoEntity(19):toWorld(ang(0,0,0)))
+    holoParent(20,19)
+    
+    findIncludePlayerProps(owner())
+    findIncludeClass("prop_*")
+    findIncludeClass("pod_*")
+    findIncludeClass("wire_*")
+    findIncludeClass("acf_*")
+    findInSphere(Base:pos(),1000)
+    rangerFilter(findToArray())
+    rangerFilter(Base)
+    rangerFilter(Base:children())
+    
+    for(I=1,14){
+        holoScale(I,vec())
+    }
+    
+    function number icos(A, B, C) {
+        return acos((A^2 + B^2 - C^2) / (2*A*B))    
+    }
+    function digi_ik(NHipA, NHipB, NKnee, NAnkle, NFoot, LengthA, LengthB, LengthC, Base:entity, Target:vector, LegRotation) {
+        local AxisWorld = Target - holoEntity(NHipA):pos()
+        local AxisLocal = Base:toLocalAxis(AxisWorld)
+        
+        holoAng(NHipA, Base:toWorld(ang(0, LegRotation, atan(AxisLocal:z(), AxisLocal:y()) + 90)))
+        
+        local AxisLocal = holoEntity(NHipA):toLocalAxis(AxisWorld)
+        local Fraction = 1 - min(1, holoEntity(NHipB):pos():distance(Target) / (LengthA + LengthC) - 0.5)
+        
+        holoAng(NHipB, holoEntity(NHipA):toWorld(ang(atan(-AxisLocal:x(), AxisLocal:z()) + 90*Fraction, 180, 0)))
+        
+        local AxisLocal = holoEntity(NHipA):toLocalAxis(Target - holoEntity(NKnee):pos())
+        local Distance = min(AxisLocal:length(), LengthB + LengthC)
+        
+        holoAng(NKnee, holoEntity(NHipA):toWorld(ang(atan(AxisLocal:x(), AxisLocal:z()) + icos(Distance, LengthB, LengthC), 0, 0)))
+        holoAng(NAnkle, holoEntity(NKnee):toWorld(ang(icos(LengthC, LengthB, Distance) + 180, 0, 0)))
+        holoAng(NFoot, Base:angles())
+    }
+    function quat_ik(NHip, NKnee, NFoot, LengthA, LengthB, Base:entity, Target:vector, HandAng:angle, ShoulderAng:angle, Aim) {
+        local Origin = holoEntity(NHip):pos()
+        local AxisLocal = Base:toLocalAxis(Target - Origin)
+
+        #local AxisAngle = AxisLocal:toAngle():setRoll(-bearing(Target, Base:angles(), Origin)) #-- forward knee
+        local AxisAngle = AxisLocal:toAngle():setRoll(-bearing(Origin, Base:angles()+ShoulderAng, Target)) #-- reverse knee
+
+        local LengthC = min(AxisLocal:length(), LengthA + LengthB)
+        local AxisQuat = quat(AxisAngle) * qRotation(vec(0, 1, 0), 90 + icos(LengthC, LengthA, LengthB))
+        
+        holoAng(NHip, Base:toWorld((AxisQuat:toAngle()*ang(1,Aim,1))+ang(0,180*!Aim,0)))
+        holoAng(NKnee, holoEntity(NHip):toWorld(ang(icos(LengthB, LengthA, LengthC) + 180, 0, 0)))
+        holoAng(NFoot, HandAng)
+    }
+    function number mix(N1:number,N2:number,M:number){
+        return mix(vec(N1),vec(N2),M):x()
+    }
+    
+    NextLeft=LastLeft=PosLeft=Base:toWorld(vec(0,LegWidthFloor,-StandHeight))
+    NextRight=LastRight=PosRight=Base:toWorld(vec(0,-LegWidthFloor,-StandHeight))
+    
+    CycleTime=CycleTime2=systime()
+    timer("int",100)
+}
+if(clk("int")){
+    timer("int",50)
+    Vel=clamp(Base:vel(),vec(-100),vec(100))
+    Vel2=clamp(Base:velL(),vec(-100),vec(100))
+    IsMoving=clamp(Base:vel():length()*0.003,0,1)
+    SpeedDamp=Base:velL()*0.005
+    
+    MoveVel=(Vel2:setZ(0):normalized()*clamp(Vel2:length()/100,0,1))*StepDistance*(Base:vel():length()/200)
+    Ranger_Left=rangerOffsetHull(StandHeight*2,Base:toWorld(vec(0,LegWidthFloor,0)+(MoveVel*vec(1,0.8*clamp(abs(Base:velL():y())*0.5,0,1),1))),-Base:up(),vec(12))
+    Ranger_Right=rangerOffsetHull(StandHeight*2,Base:toWorld(vec(0,-LegWidthFloor,0)+(MoveVel*vec(1,0.8*clamp(abs(Base:velL():y())*0.5,0,1),1))),-Base:up(),vec(12))
+    Dist=(Ranger_Left:distance()+Ranger_Right:distance())/2
+    
+    On_Ground=Dist<(StandHeight+25)
+    
+    Driver=Seat:driver()
+    if(changed(Driver:isPlayer())){
+        CamActive=Driver:isPlayer()
+    }
+    W=Driver:keyForward()
+    S=Driver:keyBack()
+    A=Driver:keyLeft()
+    D=Driver:keyRight()
+    Shift=Driver:keySprint()
+    Space=Driver:keyJump()
+    Control=Driver:keyDuck()
+    M1=Driver:keyAttack1()
+    M2=Driver:keyAttack2()
+    TPButton=Driver:keyWalk()
+    if(changed(TPButton)&TPButton){
+        TP=!TP
+        CamPos = TP ? vec(0,-65,55) : vec(5,0,35)
+        CamDist = TP ? 300 : 0
+        CamParent = TP ? Base : Seat
+    }
+    
+    if((!Jump)&(!JumpStart)&On_Ground){
+        if(changed(Space)&Space){
+            JumpStart=1
+            timer("jump",400)
+            Base:emitSound("npc\dog\dog_servo5.wav",0,85,1)
+        }
+    }
+    
+    X=W-S
+    Y=D-A
+    
+    Moving=X|Y
+    IsMoving2=(NextLeft:distance(LastLeft)>5)|(NextRight:distance(LastRight)>5)|Moving
+    
+    XDir=((Base:forward()*X)+(Base:right()*Y)):normalized()
+    
+    HeightCheck = clamp(Control+JumpStart,0,1) ? CrouchHeight : StandHeight
+    
+    Height=((HeightCheck-Dist)*85)
+    
+    Dir=XDir+(Base:right()*(-0.2*IsMoving*(Time-0.5)*(Step-!Step)))
+    
+    DampX=(Base:forward()*Vel2:x()*0.8*!Jump)*(1+(IsMoving*(1.5+abs(SpeedDamp:x()*0.6))))
+    DampY=-(Base:right()*Vel2:y()*1*!Jump)*(1+(IsMoving*(1.5+abs(SpeedDamp:y()*0.6))))
+    DampZ=(Base:up()*Vel2:z()*(Vel2:z()<0 ? (JumpStart|Control ? 4 : 8) : 3*!JumpStart)*!Jump)*clamp(abs(Height/15),0,1)
+    
+    XCheck=(Vel2:x()<0)-(Vel2:x()>0)
+    LeftHold=(Base:toLocal(PosLeft):x()*XCheck/StepDistance)
+    RightHold=(Base:toLocal(PosRight):x()*XCheck/StepDistance)
+    Hold=clamp(1-((LeftHold+RightHold)/10),0,1)
+    
+    Damp=(DampX+DampY+DampZ)*5
+    Force=((Dir*(MoveSpeed*(1+Shift)*5*(Base:vel():length()<(MoveSpeed*4)))*Hold)+vec(0,0,Height)-Damp)*(Base:mass()/25)
+    
+    Ang=(Base:toLocal(ang(0,CamAng:yaw(),0))*75)-(Base:angVel()*15)
+    Base:applyAngForce(Ang*(Base:mass()/25))
+    
+    AddVel=(Vel + $Vel * 5)/(66-50)/(10-(5*On_Ground))
+    
+    MidPos=-(clamp(Base:toLocal((PosLeft+PosRight)/2):setZ(0),vec(-15),vec(15))*0.1*!Moving)*IsMoving2
+    
+    StepSpeed2=StepSpeed*(1+(clamp(1-Base:vel():length()/200,0,1)*0.2))
+    
+    
+    
+    if(!IsMoving2){
+        CycleTime=systime()
+        Time=0
+        CycleTime2=systime()
+        Time2=0
+    }else{
+        Time=systime()-CycleTime
+        Time=clamp(Time*StepSpeed2,0,1)
+        Time2=systime()-CycleTime2
+        Time2=clamp(Time2*StepSpeed2,0,1)
+    }
+    if(Time>=1){
+        Time=0
+        CycleTime=systime()
+        Step=!Step
+        if((IsMoving2>0.015)&On_Ground){
+            if(Step){
+                holoEntity(13):emitSound("npc/dog/dog_footstep2.wav",0,clamp(100*(NextLeft:distance(LastLeft)/StepDistance/1.5),75,100),clamp(100*(NextLeft:distance(LastLeft)/StepDistance/1.5),85,100)/100)
+                holoEntity(7):emitSound("npc\dog\dog_servo5.wav",0,clamp(100*(NextRight:distance(LastRight)/StepDistance/5),75,100),clamp(100*(NextLeft:distance(LastRight)/StepDistance/5),65,100)/100)
+            }else{
+                holoEntity(7):emitSound("npc/dog/dog_footstep2.wav",0,clamp(100*(NextRight:distance(LastRight)/StepDistance/1.5),75,100),clamp(100*(NextRight:distance(LastRight)/StepDistance/1.5),85,100)/100)
+                holoEntity(13):emitSound("npc\dog\dog_servo5.wav",0,clamp(100*(NextRight:distance(LastLeft)/StepDistance/5),75,100),clamp(100*(NextLeft:distance(LastLeft)/StepDistance/5),65,100)/100)
+            }
+        }
+    }
+    if(Time2>=1){
+        Time2=0
+        CycleTime2=systime()
+    }
+    
+    holoAng(14,holoEntity(1):toWorld(clamp(holoEntity(1):toLocal(ang(CamAng:pitch()*max(LeftVal2,RightVal2),(holoEntity(1):angles():yaw()*(1-max(LeftVal2,RightVal2)))+(CamAng:yaw()*max(LeftVal2,RightVal2)),holoEntity(1):angles():roll())),-ang(25,45,180),ang(25,45,180))+
+    ang(clamp(Vel2:x()*0.1*(1-max(LeftVal2,RightVal2)),-15,25)*IsMoving,13*(1-max(LeftVal2,RightVal2))*clamp(RotateTest*1.2,-1,1)+clamp(Vel2:y()*0.1,-15,15),-(1*clamp(RotateTest*2.4,-1,1)))*On_Ground))
+    
+    holoPos(1,Base:toWorld(vec(0,0,+((StepBounceHeight*clamp(abs((Time-0.5))*1.5,0,1)*clamp(SpeedDamp:length()*0.65,0,1))))*On_Ground))
+    holoAng(1,Base:toWorld(ang(clamp(Vel2:x()*0.02,-25,65)*IsMoving,-(12*(1-(max(LeftVal2,RightVal2)*0.5))*clamp(RotateTest*1.2,-1,1))+clamp(Vel2:y()*0.1,-15,15)+(5*IsMoving*(Time-0.5)*(Step-!Step)),clamp(-Vel2:y()*0.1,-0.6,0.6))*On_Ground))
+    holoAng(2,holoEntity(1):toWorld(ang(0,7*(1-clamp(abs(2*(Base:toLocal(PosLeft):x()/StepDistance)),0,1)),7*clamp(2*((Base:toLocal(PosLeft):y()-LegWidthFloor)/35),-1,1)+10*(1-clamp(abs(1*(Base:toLocal(PosLeft):x()/StepDistance)),0,1)))))
+    holoAng(8,holoEntity(1):toWorld(ang(0,-7*(1-clamp(abs(2*(Base:toLocal(PosRight):x()/StepDistance)),0,1)),7*clamp(-2*((Base:toLocal(PosRight):y()+LegWidthFloor)/35),-1,1)-10*(1-clamp(abs(1*(Base:toLocal(PosRight):x()/StepDistance)),0,1)))))
+    
+    if(On_Ground){
+        Base:applyForce(Force+MidPos*Base:mass())
+        NextLeft=Ranger_Left:pos()
+        NextRight=Ranger_Right:pos()
+        if(Step){
+            LastRight=PosRight
+            PosLeft=bezier(LastLeft,mix(LastLeft,NextLeft,0.65)+Base:up()*StepHeight*IsMoving,NextLeft,Time)
+            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5)
+            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5)
+        }else{
+            LastLeft=PosLeft
+            PosRight=bezier(LastRight,mix(LastRight,NextRight,0.65)+Base:up()*StepHeight*IsMoving,NextRight,Time)
+            digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, PosLeft-AddVel,5)
+            digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, PosRight-AddVel,-5)
+        }
+    }else{
+        digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,LegWidthFloor,-mix(StandHeight,CrouchHeight,1)))-AddVel,5)
+        
+        digi_ik(9, 10, 11, 12, 13, LengthA, LengthB, LengthC, Base, Base:toWorld(vec(0,-LegWidthFloor,-mix(StandHeight,CrouchHeight,0)))-AddVel,-5)
+    }
+    if(changed(On_Ground)){
+        Base:propGravity(!On_Ground)
+        if(On_Ground){
+            PosLeft=Base:toWorld(vec(0,LegWidthFloor,-StandHeight))
+            PosRight=Base:toWorld(vec(0,-LegWidthFloor,-StandHeight))
+            Base:emitSound("npc/dog/dog_footstep_run3.wav",0,100,1)
+        }else{
+            timer("unjump",100)
+        }
+    }
+    RotateTest=((((Time2-0.5)*(Step-!Step))*2))*IsMoving*On_Ground
+    LHand_Ang=mix(CamAng:setRoll(25)*CamActive,holoEntity(16):angles(),LeftVal2)
+    RHand_Ang=mix(CamAng:setRoll(-25)*CamActive,holoEntity(19):angles(),RightVal2)
+    LeftVal+=0.25*(M1-!M1)
+    RightVal+=0.25*(M2-!M2)
+    LeftVal=clamp(LeftVal,0,1)
+    RightVal=clamp(RightVal,0,1)
+    LeftVal2=LeftVal * LeftVal * (3.0 - 2.0 * LeftVal)
+    RightVal2=RightVal * RightVal * (3.0 - 2.0 * RightVal)
+    LeftHandRanger=rangerOffsetHull((Length_A+Length_B)*0.9,holoEntity(15):pos()-holoEntity(14):up()*7,CamAng:forward(),vec(12))
+    RightHandRanger=rangerOffsetHull((Length_A+Length_B)*0.9,holoEntity(18):pos()-holoEntity(14):up()*7,CamAng:forward(),vec(12))
+    if(On_Ground){
+        LPos1=(M1 ? holoEntity(14) : Base):toWorld(vec(15,Arm_Width_Lower,-Offset:z()-5-(35*LeftVal2)):rotateAroundAxis(vec(0,1,0),(45*RotateTest*!M1)))
+        LPos2=LeftHandRanger:pos()
+        RPos1=(M2 ? holoEntity(14) : Base):toWorld(vec(15,-Arm_Width_Lower,-Offset:z()-5-(35*RightVal2)):rotateAroundAxis(vec(0,-1,0),(45*RotateTest*!M2)))
+        RPos2=RightHandRanger:pos()
+    }else{
+        LPos1=holoEntity(14):toWorld(vec(15,Arm_Width_Lower*1.5,-Offset:z()+15-(Vel2:z()*0.025)))
+        LPos2=LeftHandRanger:pos()
+        RPos1=holoEntity(14):toWorld(vec(15,-Arm_Width_Lower*1.5,-Offset:z()+15-(Vel2:z()*0.025)))
+        RPos2=RightHandRanger:pos()
+    }
+    LHand_Pos=mix(LPos2,LPos1,LeftVal2)
+    RHand_Pos=mix(RPos2,RPos1,RightVal2)
+    quat_ik(15,16,17,Length_A,Length_B,(M1 ? holoEntity(14) : Base),LHand_Pos,LHand_Ang,ang(0,-25,0),LeftVal2>0)
+    
+    quat_ik(18,19,20,Length_A,Length_B,(M2 ? holoEntity(14) : Base),RHand_Pos,RHand_Ang,ang(0,25,0),RightVal2>0)
+}
+if(clk("unjump")){
+    Jump=JumpStart=0
+}
+if(clk("jump")){
+    Jump=1
+    Base:propSetVelocity((Base:vel()*vec(1,1,Vel:z()>0 ? 1 : 0))+Base:up()*700)
+    Base:emitSound("npc/dog/dog_pneumatic1.wav",0,100,1)
+}
