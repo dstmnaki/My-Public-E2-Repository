@@ -312,7 +312,7 @@ if(first()){
         
         holoAng(NKnee, holoEntity(NHipA):toWorld(ang(atan(AxisLocal:x(), AxisLocal:z()) + icos(Distance, LengthB, LengthC), 0, 0)))
         holoAng(NAnkle, holoEntity(NKnee):toWorld(ang(icos(LengthC, LengthB, Distance) + 180, 0, 0)))
-        holoAng(NFoot, (S|EditMode)*(On_Ground*IsMoving2) ? Base:angles() : holoEntity(NAnkle):toWorld(ang(180,0,0)))
+        holoAng(NFoot, ((S|EditMode|IsMoving2)*(On_Ground)) ? Base:angles() : holoEntity(NAnkle):toWorld(ang(180,0,0)))
     }
     function quat_ik(NHip, NKnee, NFoot, LengthA, LengthB, Base:entity, Target:vector, HandAng:angle, ShoulderAng:angle, Aim) {
         local Origin = holoEntity(NHip):pos()
