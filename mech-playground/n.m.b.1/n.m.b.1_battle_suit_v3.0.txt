@@ -8,7 +8,7 @@
 
 @persist [PosLeft PosRight]:vector CycleTime CycleTime2 Step Time Time2 Jump JumpStart
 @persist [NextLeft NextRight LastLeft LastRight]:vector
-@persist Arm_Width Arm_Width_Lower [Offset LHand_HoldPos RHand_HoldPos Holster_Pos Hold_Pos]:vector LeftVal RightVal LeftVal2 RightVal2 RotateTest IsMoving On_Ground
+@persist Arm_Width Arm_Width_Lower [Offset LHand_HoldPos RHand_HoldPos Holster_Pos Hold_Pos]:vector LeftVal RightVal LeftVal2 RightVal2 RotateTest IsMoving On_Ground IsMoving2
 @persist Gun_Left Gun_Right
 @persist CamPos:vector CamDist CamParent:entity CamActive TP
 @outputs CamPos:vector CamDist CamParent:entity CamActive
@@ -312,7 +312,7 @@ if(first()){
         
         holoAng(NKnee, holoEntity(NHipA):toWorld(ang(atan(AxisLocal:x(), AxisLocal:z()) + icos(Distance, LengthB, LengthC), 0, 0)))
         holoAng(NAnkle, holoEntity(NKnee):toWorld(ang(icos(LengthC, LengthB, Distance) + 180, 0, 0)))
-        holoAng(NFoot, (S|EditMode)*(On_Ground) ? Base:angles() : holoEntity(NAnkle):toWorld(ang(180,0,0)))
+        holoAng(NFoot, (S|EditMode)*(On_Ground*IsMoving2) ? Base:angles() : holoEntity(NAnkle):toWorld(ang(180,0,0)))
     }
     function quat_ik(NHip, NKnee, NFoot, LengthA, LengthB, Base:entity, Target:vector, HandAng:angle, ShoulderAng:angle, Aim) {
         local Origin = holoEntity(NHip):pos()
