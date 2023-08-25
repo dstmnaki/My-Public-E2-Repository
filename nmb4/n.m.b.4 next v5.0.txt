@@ -493,7 +493,7 @@ if(clk("create shit")){
 }
 
 if(clk("int")){
-    timer("int",100)
+    timer("int",60)
     EGP:egpSetText(3,AmmoLeftBack:toString())
     EGP:egpSetText(5,AmmoRightBack:toString())
     
