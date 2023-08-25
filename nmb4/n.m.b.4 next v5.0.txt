@@ -1,4 +1,4 @@
-@name N.M.B.4 Next V5.0
+@name Mech-Playground/N.M.B.1/N.M.B.4 Next V5.0
 @inputs [Base Seat]:entity CamAng:angle EGP:wirelink [GunLeft GunRight GunLeftBack GunRightBack]:entity ReadyLeft ReadyRight ReadyLeftBack ReadyRightBack AmmoLeftBack AmmoRightBack AmmoLeft AmmoRight
 @inputs [Pelvis Torso]:entity
 @inputs [MissilePod_Left MissilePod_Left_Joint]:entity
@@ -72,7 +72,7 @@ if(first()){
     CamDist = TP ? 300 : 0
     CamParent = TP ? holoEntity(14) : Seat
     
-    StandHeight=125
+    StandHeight=100
     CrouchHeight=75
     
     StepHeight=45
@@ -83,20 +83,17 @@ if(first()){
     LegWidth=24
     LegWidthFloor=35
     
-    LengthA=60*1
-    LengthB=40*1
-    LengthC=65*1
+    LengthA=60*0.75
+    LengthB=40*0.75
+    LengthC=65*0.75
     
     MoveSpeed=200
     
-    Offset=vec(-5,0,75)
+    Offset=vec(-5,0,45)
     Arm_Width=45
     Arm_Width_Lower=65
     Length_A=60
     Length_B=72
-    LHand_HoldPos=vec(75,-25,-10)
-    RHand_HoldPos=vec(25,-35,-15)
-    
     
     local I = 1
     local E = Base
