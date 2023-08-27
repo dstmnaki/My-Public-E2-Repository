@@ -23,7 +23,7 @@
 if(dupefinished()){reset()}
 if(first()){
     EditMode=0
-    rangerHitEntities(0)#!EditMode)
+    rangerHitEntities(!EditMode)
     
     #[
         N.M.B.4 Next V5.0 by [DSTM]Naki
