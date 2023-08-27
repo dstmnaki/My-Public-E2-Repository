@@ -23,7 +23,7 @@
 if(dupefinished()){reset()}
 if(first()){
     EditMode=0
-    rangerHitEntities(!EditMode)
+    rangerHitEntities(0)#!EditMode)
     
     #[
         N.M.B.4 Next V5.0 by [DSTM]Naki
@@ -68,7 +68,7 @@ if(first()){
     Base:setMass(50000)
     
     TP=0
-    CamPos = TP ? vec(0,-65,45) : vec(0,2,37)
+    CamPos = TP ? vec(0,0,80) : vec(0,15,42)
     CamDist = TP ? 300 : 0
     CamParent = TP ? holoEntity(14) : Seat
     
@@ -89,7 +89,7 @@ if(first()){
     
     MoveSpeed=200
     
-    Offset=vec(-5,0,45)
+    Offset=vec(-5,0,62)
     Arm_Width=45
     Arm_Width_Lower=65
     Length_A=60
@@ -240,7 +240,7 @@ if(first()){
     holoPos(I,T:toWorld(vec(0,0,0)))
     holoAng(I,T:toWorld(ang(0,0,0)))
     T:parentTo(holoEntity(I))
-    holoPos(I,E:toWorld(vec(0,0,35)))
+    holoPos(I,E:toWorld(vec(0,0,18)))
     holoAng(I,E:toWorld(ang(0,0,0)))
     holoParent(I,E)
     rangerPersist(1)
@@ -290,7 +290,7 @@ if(first()){
     holoPos(I,T:toWorld(vec(0,0,0)))
     holoAng(I,T:toWorld(ang(0,0,0)))
     T:parentTo(holoEntity(I))
-    holoPos(I,E:toWorld(vec(-25,20,30)))
+    holoPos(I,E:toWorld(vec(-25,20,45)))
     holoAng(I,E:toWorld(ang(0,0,0)))
     holoParent(I,E)
     
@@ -301,7 +301,7 @@ if(first()){
     holoPos(I,T:toWorld(vec(0,0,0)))
     holoAng(I,T:toWorld(ang(0,0,0)))
     T:parentTo(holoEntity(I))
-    holoPos(I,E:toWorld(vec(-25,-20,30)))
+    holoPos(I,E:toWorld(vec(-25,-20,45)))
     holoAng(I,E:toWorld(ang(0,0,0)))
     holoParent(I,E)
     
@@ -312,7 +312,7 @@ if(first()){
     holoPos(I,T:toWorld(vec(0,0,0)))
     holoAng(I,T:toWorld(ang(0,0,0)))
     T:parentTo(holoEntity(I))
-    holoPos(I,E:toWorld(vec(-35,6,0)))
+    holoPos(I,E:toWorld(vec(-35,9,0)))
     holoAng(I,E:toWorld(ang(0,0,0)))
     holoParent(I,E)
     
@@ -323,7 +323,7 @@ if(first()){
     holoPos(I,T:toWorld(vec(0,0,0)))
     holoAng(I,T:toWorld(ang(0,0,0)))
     T:parentTo(holoEntity(I))
-    holoPos(I,E:toWorld(vec(-35,-6,0)))
+    holoPos(I,E:toWorld(vec(-35,-9,0)))
     holoAng(I,E:toWorld(ang(0,0,0)))
     holoParent(I,E)
     
@@ -570,7 +570,7 @@ if(clk("int")){
     
     if(changed(TPButton)&TPButton){
         TP=!TP
-        CamPos = TP ? vec(0,-65,45) : vec(0,2,37)
+        CamPos = TP ? vec(0,0,80) : vec(0,15,42)
         CamDist = TP ? 300 : 0
         CamParent = TP ? holoEntity(14) : Seat
     }
@@ -706,7 +706,7 @@ if(clk("int")){
             local RangerGround=rangerOffsetHull(9999,Base:pos(),vec(0,0,-1),vec(50,50,1))
             LastLeft=NextLeft=holoEntity(1):toWorld(vec(0,LegWidthFloor,-mix(StandHeight,CrouchHeight,1)))-AddVel
             LastRight=NextRight=holoEntity(1):toWorld(vec(0,-LegWidthFloor,-mix(StandHeight,CrouchHeight,0)))-AddVel
-            HoverHeight=clamp((500-RangerGround:distance())*0.3,-75,75)
+            HoverHeight=clamp((500-RangerGround:distance()*0)*0.3,-75,75)*!Shift
             Base:applyForce(((-(Base:vel()*0.15)+Base:forward()*145*(W-S)+Base:right()*145*(D-A))+vec(0,0,HoverHeight))*Space*Base:mass())
             digi_ik(3, 4, 5, 6, 7, LengthA, LengthB, LengthC, Base, holoEntity(1):toWorld(vec(0,LegWidthFloor,-mix(StandHeight,CrouchHeight,1)))-AddVel,5*clamp(1-Vel:length()*0.1,0,1),0,0)
             
@@ -744,17 +744,17 @@ if(clk("int")){
     
     PointAng=approachAngle(PointAng,CamAng,12)
     rangerHitWater(0)
-    LeftHandRanger=rangerOffsetHull((Length_A+Length_B)*(Gun_Left ? mix(0.75,0.9,0) : 1.1),holoEntity(15):pos()-holoEntity(14):up()*7,PointAng:forward(),vec(12))
-    RightHandRanger=rangerOffsetHull((Length_A+Length_B)*(Gun_Right ? mix(0.75,0.9,0) : 1.1),holoEntity(18):pos()-holoEntity(14):up()*7,PointAng:forward(),vec(12))
+    LeftHandRanger=rangerOffsetHull(9999,CamParent:toWorld(CamPos),PointAng:forward(),vec(12))
+    RightHandRanger=rangerOffsetHull(9999,CamParent:toWorld(CamPos),PointAng:forward(),vec(12))
     if(On_Ground){
-        LPos1=(M1 ? holoEntity(14) : Base):toWorld(vec(15,Arm_Width_Lower,-Offset:z()+15-(35*LeftVal2)):rotateAroundAxis(vec(0,1,0),(45*RotateTest*!M1)))
+        LPos1=(M1 ? holoEntity(14) : Base):toWorld(vec(15,Arm_Width_Lower,-Offset:z()+30-(35*LeftVal2)):rotateAroundAxis(vec(0,1,0),(45*RotateTest*!M1)))
         LPos2=LeftHandRanger:pos()
-        RPos1=(M2 ? holoEntity(14) : Base):toWorld(vec(15,-Arm_Width_Lower,-Offset:z()+15-(35*RightVal2)):rotateAroundAxis(vec(0,-1,0),(45*RotateTest*!M2)))
+        RPos1=(M2 ? holoEntity(14) : Base):toWorld(vec(15,-Arm_Width_Lower,-Offset:z()+30-(35*RightVal2)):rotateAroundAxis(vec(0,-1,0),(45*RotateTest*!M2)))
         RPos2=RightHandRanger:pos()
     }else{
-        LPos1=holoEntity(14):toWorld(vec(15,Arm_Width_Lower*(EditMode ? 1 : 1.5),-Offset:z()+15-(Vel2:z()*0.025)))
+        LPos1=holoEntity(14):toWorld(vec(15,Arm_Width_Lower*(EditMode ? 1 : 1.5),-Offset:z()+35-(Vel2:z()*0.025)))
         LPos2=LeftHandRanger:pos()
-        RPos1=holoEntity(14):toWorld(vec(15,-Arm_Width_Lower*(EditMode ? 1 : 1.5),-Offset:z()+15-(Vel2:z()*0.025)))
+        RPos1=holoEntity(14):toWorld(vec(15,-Arm_Width_Lower*(EditMode ? 1 : 1.5),-Offset:z()+35-(Vel2:z()*0.025)))
         RPos2=RightHandRanger:pos()
     }
     LHand_Pos=mix(LPos2,LPos1,LeftVal2)
