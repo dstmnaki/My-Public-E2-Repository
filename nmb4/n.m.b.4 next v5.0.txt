@@ -63,7 +63,7 @@ if(first()){
     setName("N.M.B.4 Next V5.0")
     
     Base:propDrag(0)
-    Base:setMass(50000)
+    Base:setMass(10000)
     
     StandHeight=100
     CrouchHeight=75
@@ -337,9 +337,6 @@ if(first()){
     findInSphere(Base:pos(),1000)
     Filter=findToArray()
     #Filter:pushEntity(entity())
-    foreach(I,E:entity=Filter){
-        E:setMass(50000)
-    }
     rangerFilter(Filter)
     rangerFilter(Base)
     rangerFilter(Base:children())
