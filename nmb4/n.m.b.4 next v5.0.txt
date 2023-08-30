@@ -1,5 +1,5 @@
 @name Mech-Playground/N.M.B.1/N.M.B.4 Next V5.0
-@inputs [Base Seat]:entity CamAng:angle EGP:wirelink [GunLeft GunRight GunLeftBack GunRightBack]:entity ReadyLeft ReadyRight ReadyLeftBack ReadyRightBack AmmoLeftBack AmmoRightBack AmmoLeft AmmoRight
+@inputs [Base Seat]:entity CamAng:angle
 @inputs [Pelvis Torso]:entity
 @inputs [MissilePod_Left MissilePod_Left_Joint]:entity
 @inputs [MissilePod_Right MissilePod_Right_Joint]:entity
@@ -16,8 +16,6 @@
 @outputs CamPos:vector CamDist CamParent:entity CamActive Filter:array
 @outputs Fire FirePods ThrusterGo
 @persist Time3
-
-@persist I3 Count Ready WH:vector2
 
 @persist EditMode
 if(dupefinished()){reset()}
@@ -66,11 +64,6 @@ if(first()){
     
     Base:propDrag(0)
     Base:setMass(50000)
-    
-    TP=0
-    CamPos = TP ? vec(0,0,80) : vec(0,15,42)
-    CamDist = TP ? 300 : 0
-    CamParent = TP ? holoEntity(14) : Seat
     
     StandHeight=100
     CrouchHeight=75
@@ -427,104 +420,17 @@ if(first()){
     
     CycleTime=CycleTime2=systime()
     
-    WH=vec2(egpScrW(owner()),egpScrH(owner()))/2
-    
-    EGP:egpText(1,"+",vec2(0,0)+WH)
-    EGP:egpAlign(1,1,1)
-    
-    EGP:egpText(2,"122mm",vec2(-225,35)+WH)
-    EGP:egpAlign(2,1,1)
-    EGP:egpSize(2,22)
-    
-    EGP:egpText(3,"3",vec2(-225,0)+WH)
-    EGP:egpAlign(3,1,1)
-    EGP:egpSize(3,45)
-    
-    EGP:egpText(4,"122mm",vec2(225,35)+WH)
-    EGP:egpAlign(4,1,1)
-    EGP:egpSize(4,22)
-    
-    EGP:egpText(5,"3",vec2(225,0)+WH)
-    EGP:egpAlign(5,1,1)
-    EGP:egpSize(5,45)
-    
-    EGP:egpText(6,"30mm",vec2(-35,10)+WH)
-    EGP:egpAlign(6,1,1)
-    EGP:egpSize(6,15)
-    
-    EGP:egpText(7,"500",vec2(-35,-5)+WH)
-    EGP:egpAlign(7,1,1)
-    EGP:egpSize(7,15)
-    
-    EGP:egpText(8,"30mm",vec2(35,10)+WH)
-    EGP:egpAlign(8,1,1)
-    EGP:egpSize(8,15)
-    
-    EGP:egpText(9,"500",vec2(35,-5)+WH)
-    EGP:egpAlign(9,1,1)
-    EGP:egpSize(9,15)
-    
-    Count=45
     timer("int",100)
-    timer("create shit",100)
+    
+    TP=1
+    CamPos = TP ? vec(72,0,65) : vec(0,15,42)
+    CamDist = TP ? 0 : 0
+    CamParent = TP ? holoEntity(14) : Seat
 }
-if(clk("create shit")){
-    if(I3<Count){
-        I3++
-        local I2 = I3+80
-        local P = vec2(-0,0)+WH
-        local PosTest=vec2(265*1.1,0):rotate(-45+((90/Count)*I3))
-        local PosTest2=vec2(255*1.1,0):rotate(-45+((90/Count)*I3))
-        EGP:egpLine(I2,PosTest+P,PosTest2+P)
-        EGP:egpColor(I2,vec(25))
-        EGP:egpSize(I2,2)
-        
-        local I2 = I3+80+Count
-        local P = vec2(0,0)+WH
-        local PosTest=vec2(265*1.1,0):rotate(45+180-((90/Count)*I3))
-        local PosTest2=vec2(255*1.1,0):rotate(45+180-((90/Count)*I3))
-        EGP:egpLine(I2,PosTest+P,PosTest2+P)
-        EGP:egpColor(I2,vec(25))
-        EGP:egpSize(I2,2)
-        timer("create shit",50)
-    }else{
-        Ready=1
-    }
-}
+
 
 if(clk("int")){
     timer("int",60)
-    EGP:egpSetText(3,AmmoLeftBack:toString())
-    EGP:egpSetText(5,AmmoRightBack:toString())
-    
-    EGP:egpSetText(7,AmmoLeft:toString())
-    EGP:egpSetText(9,AmmoRight:toString())
-    if(Ready){
-        Progress=(round(GunLeftBack:acfReloadProgress()*100)+round(GunRightBack:acfReloadProgress()*100))/2
-        
-        Progress2=Progress/100
-        if(Progress<100){
-            for(I=1,Count){
-                local I2 = I+80+Count
-                if(I<=(Count*(Progress2))){
-                    EGP:egpColor(I2,vec(255,0,0))
-                }else{
-                    EGP:egpColor(I2,vec(25))
-                }
-                local I2 = I+80
-                if(I<=(Count*(Progress2))){
-                    EGP:egpColor(I2,vec(255,0,0))
-                }else{
-                    EGP:egpColor(I2,vec(25))
-                }
-            }
-        }
-        if((changed(Progress)&(Progress==1))|((changed(ReadyLeftBack)|changed(ReadyRightBack))&ReadyLeftBack&ReadyRightBack)){
-            for(I=1+80,Count+80+Count){
-                EGP:egpColor(I,vec(0,255,255))
-            }
-        }
-    }
     Vel=clamp(Base:vel(),vec(-100),vec(100))
     Vel2=clamp(Base:velL(),vec(-100),vec(100))
     IsMoving=clamp(Base:vel():length()*0.003,0,1)
@@ -570,8 +476,8 @@ if(clk("int")){
     
     if(changed(TPButton)&TPButton){
         TP=!TP
-        CamPos = TP ? vec(0,0,80) : vec(0,15,42)
-        CamDist = TP ? 300 : 0
+        CamPos = TP ? vec(72,0,65) : vec(0,15,42)
+        CamDist = TP ? 0 : 0
         CamParent = TP ? holoEntity(14) : Seat
     }
     
